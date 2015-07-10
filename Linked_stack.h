@@ -55,7 +55,7 @@ class Linked_stack {
 
 	public:
 		Linked_stack();
-		Linked_stack( Linked_stack const & );
+		Linked_stack( Linked_stack & );
 		~Linked_stack();
 
 		bool empty() const;
@@ -82,24 +82,23 @@ stack_size( 0 ) {
 }
 
 template <typename Type>
-Linked_stack<Type>::Linked_stack( Linked_stack const &stack ):
+Linked_stack<Type>::Linked_stack( Linked_stack &stack ):
 itop( stack.itop ),
 stack_size( stack.stack_size ) {
 	// enter your implementation here
     
     // Clear the original list
     for (int i = 0; i < stack_size; i++)
-        list.pop();
+        list.pop_front();
     
     // Make a complete copy of the input linked stack. Each entry is pushed onto the new linked stack
-    int stacksize = stack_size;
-    Type tempArray[stacksize];
-    for (int i = 0; i < stacksize; i++) {
+    Type tempArray[stack_size];
+    for (int i = 0; i < stack_size; i++) {
         tempArray[i] = stack.pop();
         push(tempArray[i]);
     }
     
-    for (int i = 0; i < stacksize; i++)
+    for (int i = 0; i < stack_size; i++)
         stack.push(tempArray[i]);
     
     // First, copy over the Double_sentinel_list
@@ -129,12 +128,12 @@ Linked_stack<Type>::~Linked_stack() {
         return;
     
     // Otherwise, traverse the list, deleting each node, including the head and tail sentinels, to deallocate the memory pointed to by the entries of the linked list
-    Double_node<Type> curr = list.head();
-    Double_node<Type> tmpPtr = list.head()->next();
+    Double_node<Type> *curr = list.head();
+    Double_node<Type> *tmpPtr = list.head()->next();
     while (curr != nullptr) {
         delete curr;
         curr = tmpPtr;
-        tmpPtr = tmpPtr->next;
+        tmpPtr = tmpPtr->next();
     }
 }
 
@@ -158,7 +157,7 @@ int Linked_stack<Type>::list_size() const {
     //
     
     // Returns the number of nodes in the linked list data structure. This must be implemented as provided. (O(1))
-    // We're told not to change the implementation but is this right? Shouldn't it be std::ceil(list_size/ARRAY_CAPACITY), for which we need #include <cmath>?
+    // We're told not to change the implementation but is this right? Shouldn't it be std::ceil(size/ARRAY_CAPACITY), for which we need #include <cmath>?
 }
 
 template <typename Type>
@@ -169,12 +168,9 @@ Type Linked_stack<Type>::top() const {
     if (stack_size == 0)
         throw underflow();
     
-    // Returns the object at the top of the stack (last entry in the array pointed to by the node preceding the tail sentinel
-    Double_node<Type> *curr = list.tail()->previous();
-    Type *tempArray = new Type[ARRAY_CAPACITY];
-    tempArray = curr->retrieve();
-    Type result = tempArray[itop];
-    delete tempArray;
+    // Returns the object at the top of the stack (last entry in the front array)
+    Type *tempArray = list.front();
+    Type result = *(tempArray + itop);
     
 	return result;
 }
@@ -190,10 +186,11 @@ template <typename Type>
 Linked_stack<Type> &Linked_stack<Type>::operator=( Linked_stack<Type> rhs ) {
 	//The assignment operator makes a copy of the argument and then swaps the member variables of this node with those of the copy. (O(nlhs + nrhs))
     
-    // To avoid losing the argument (referred to as rhs), a copy (temp) must be made
-    Linked_stack<Type> temp(rhs);
-    swap( temp );
-
+    // To avoid losing the argument (referred to as rhs), the following must be done
+    list = rhs.list;
+    stack_size = rhs.stack_size;
+    itop = rhs.itop;
+    
 	return *this;
 }
 
@@ -204,18 +201,19 @@ void Linked_stack<Type>::push( Type const &obj ) {
     
     // Check to see if stack is empty or if the topmost array constituting the stack is full. If so, allocate memory for a new array, put the argument in it and push it onto the list
     if (stack_size == 0 || itop == 7) {
-        Type *tmpArray = new Type[ARRAY_CAPACITY];
+        Type *topArray = new Type[ARRAY_CAPACITY];
         itop = 0;
-        tmpArray[itop] = obj;
-        list.push_back(tmpArray);
+        topArray[itop] = obj;
+        list.push_front(*topArray);
         // Looks diff from the instructions - problem? Instructions: If the stack is empty, allocate memory for a new array with the required capacity, push the address of that array onto the linked list, set both indices to zero and place the new argument at that location. The size of the stack is now one.
     }
     // If the topmost array constituting the stack isn't full, push the argument into it
+    //////////////////////////
     else {
         itop++;
-        Double_node<Type> *curr = list.tail()->prrevious;
-        Type *tmpArray = curr->retrieve();
-        tmpArray[itop] = obj;
+        Double_node<Type> *curr = list.head()->next();
+        Type *topArray = curr->retrieve();
+        topArray[itop] = obj;
     }
     
     // Increment the stack size
@@ -230,74 +228,72 @@ Type Linked_stack<Type>::pop() {
     if (stack_size == 0) throw underflow();
     
     // Otherwise, decrement itop and pop the top of the stack
-    else {
-        itop--;
-        Double_node<Type> curr = list.tail()->previous();
-        Type *tmpArray = curr->retrieve();
-        Type result = tmpArray[itop+1];
-        tmpArray[itop+1] = NULL;
-        
-        // if itop is an invalid value, reset it accordingly and delete the now-extraneous array and node
-        if (itop == -1) {
-            itop = ARRAY_CAPACITY - 1;
-            delete [] tmpArray;
-            list.pop_back();
-        }
-        
-        // Decrement the stack size
-        stack_size--;
-        
-        // If the stack is now empty, also pop the front of the linked list and deallocate the memory allocated to the array in that node
-        if (stack_size == 0) {
-            /* necessary? If the stack is now empty, itop = -1 (previous conditional)
-             Double_node<Type> temp = list.head()->next();
-             Type *tempArray = temp->retrieve();
-             delete [] tempArray;
-             list.pop_front();
-             */
-        }
-        
+    itop--;
+    Double_node<Type> *curr = list.head()->next();
+    Type *tmpArray = curr->retrieve();
+    Type result = tmpArray[(itop+1)];
+    tmpArray[(itop+1)] = NULL;
+    
+    // if itop is an invalid value, reset it accordingly and delete the now-extraneous array and node
+    if (itop == -1) {
+        itop = ARRAY_CAPACITY - 1;
+        list.pop_front();
     }
     
     // Decrement the stack size
     stack_size--;
     
-	return Type();
+    // If the stack is now empty, also pop the front of the linked list and deallocate the memory allocated to the array in that node
+    if (stack_size == 0) {
+        /* necessary? If the stack is now empty, itop = -1 (previous conditional)
+         Double_node<Type> temp = list.head()->next();
+         Type *tempArray = temp->retrieve();
+         delete [] tempArray;
+         list.pop_front();
+         */
+    }    
+    
+    // Decrement the stack size
+    stack_size--;
+    
+	return result;
 }
 
 // You will be required to modify this function in order to accomodate
 // your implementation of a singly linked list in Project 1.
 
+// values are in arrays, not values singly attached to nodes
+// first arrays occur on list.tail()->previous(); not on list.head()
 template <typename T>
 std::ostream &operator<<( std::ostream &out, Linked_stack<T> const &stack ) {
 	if ( stack.list.size() == 0 ) {
-		out << "->0";
+		out << "0->0";
 	} else if ( stack.list.size() == 1 ) {
-		out << "->[ ";
-
-        Double_node<T> *node = stack.list.head();
+		out << "0->[ ";
+        
+        Double_node<T> *node = stack.list.head()->next();
+        T* val = node->retrieve();
 		for ( int i = 0; i <= stack.itop; ++i ) {
-			out << node << " ";
-            node = node->next();
+			out << val[i] << " ";
 		}
-
+        node = node->next();
+        
 		out << "]->0";
 	} else {
-		out << "->";
+		out << "0->";
 
-		for ( Double_node<T> *ptr = stack.list.head(); ptr != nullptr; ptr = ptr->next() ) {
+		for ( Double_node<T> *ptr = stack.list.head()->next(); ptr != stack.list.tail(); ptr = ptr->next() ) {
 			out << "[ ";
-
-			if ( ptr == stack.list.head() ) {
+            T* array = ptr->retrieve();
+            
+			if ( ptr == stack.list.head()->next() ) {
 				for ( int i = 0; i <= stack.itop; ++i ) {
-					out << ptr->retrieve() << " ";
-                    ptr = ptr->next();
-				}
+					out << array[i] << " ";
+                }
 			} else {
 				for ( int i = 0; i <= Linked_stack<T>::ARRAY_CAPACITY - 1; ++i ) {
-					out << ptr->retrieve() << " ";
-                    ptr = ptr->next();
-				}
+					out << array[i] << " ";
+                }
 			}
 
 			out << "]->";
