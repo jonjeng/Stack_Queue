@@ -95,7 +95,7 @@ list_size( list.list_size ) {
     if (list.empty()) return;
     
     // Copy the elements of source, including tail_sentinel (value -1), to copy_list
-    for (Double_node<Type> *source = list.list_head->next(), *curr = list_head; (source->next() != nullptr); source = source->next(), curr = curr->next_node)
+    for (Double_node<Type> *source = list.list_head->next(), *curr = list_head; (source != nullptr); source = source->next(), curr = curr->next_node)
     {
         curr->next_node = new Double_node<Type>(default_parameter, curr, list_tail);
         curr->next_node->element = source->retrieve();
@@ -124,9 +124,8 @@ int Double_sentinel_list<Type>::size() const {
 
 template <typename Type>
 bool Double_sentinel_list<Type>::empty() const {
-    // Return true if size == 0 and/or the head sentinel points to the tail sentinel (value 0)
-    Double_node<Type> *check = list_head;
-    if (check->next_node == list_tail) return true;
+    // Return true if size == 0
+    if (list_size == 0) return true;
     
     // Otherwise, the list is not empty
     return false;
@@ -143,7 +142,7 @@ Type* Double_sentinel_list<Type>::front() const {
     }
     catch(underflow & exception){
         // Inform the client of the underflow exception
-        std::cout << "Error: there are no items in the list!\nThe returned value of -1 represents the head sentinel" << std::endl;
+        std::cout << "Error: there are no items in the list!\n" << std::endl;
         return nullptr;
     }
 }
@@ -159,7 +158,7 @@ Type* Double_sentinel_list<Type>::back() const {
     }
     catch(underflow & exception){
         // Inform the client of the underflow exception
-        std::cout << "Error: there are no items in the list!\nThe returned value of -1 represents the tail sentinel" << std::endl;
+        std::cout << "Error: there are no items in the list!\n" << std::endl;
         return -1;
     }
 }
@@ -229,7 +228,7 @@ template <typename Type>
 Type* Double_sentinel_list<Type>::pop_front() {
     try {
         // If the list is empty, throw an underflow exception
-        if (list_size == 0)
+        if (empty())
             throw underflow();
         // Delete the front node and return its contents
         Double_node<Type> *tmpPtr;
