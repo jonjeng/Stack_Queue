@@ -1,26 +1,11 @@
 /*****************************************
- * Instructions
- *  - Replace 'uwuserid' with your uWaterloo User ID
- *  - Select the current calendar term and enter the year
- *  - List students with whom you had discussions and who helped you
- *
- * uWaterloo User ID:  uwuserid @uwaterloo.ca
- * Submitted for ECE 250
- * Department of Electrical and Computer Engineering
- * University of Waterloo
- * Calender Term of Submission:  Summer 2015
- *
- * By submitting this file, I affirm that
- * I am the author of all modifications to
- * the provided code.
- *
- * The following is a list of uWaterloo User IDs of those students
- * I had discussions with in preparing this project:
- *    -
- *
- * The following is a list of uWaterloo User IDs of those students
- * who helped me with this project (describe their help; e.g., debugging):
- *    -
+ Project 1 - CIS 22C
+ 
+ * Contributors:
+ * Evan Finnigan
+ * Forest Finnigan
+ * Jonathan Jeng
+ * Abhishek Rajbahndri
  *****************************************/
 
 /**********************************************************
@@ -55,7 +40,7 @@ class Linked_stack {
 
 	public:
 		Linked_stack();
-		Linked_stack( Linked_stack & );
+		Linked_stack( Linked_stack const & );
 		~Linked_stack();
 
 		bool empty() const;
@@ -82,41 +67,34 @@ stack_size( 0 ) {
 }
 
 template <typename Type>
-Linked_stack<Type>::Linked_stack( Linked_stack &stack ):
+Linked_stack<Type>::Linked_stack( Linked_stack const &stack ):
 itop( stack.itop ),
 stack_size( stack.stack_size ) {
 	// enter your implementation here
     
-    // Clear the original list
-    for (int i = 0; i < stack_size; i++)
-        list.pop_front();
-    
+
     // Make a complete copy of the input linked stack. Each entry is pushed onto the new linked stack
-    Type tempArray[stack_size];
-    for (int i = 0; i < stack_size; i++) {
-        tempArray[i] = stack.pop();
-        push(tempArray[i]);
+    // If the list is empty, do nothing
+    if (stack.list.size() == 0) return;
+    
+
+    // If the list consists of one or more nodes, copy the entries of those one or more nodes onto the stack
+    else if (stack.list.size() >= 1) {
+        for (Double_node<Type> *ptr = stack.list.head()->next(); ptr != stack.list.tail(); ptr = ptr->next()) {
+            if (ptr == stack.list.head()->next()) {
+                for (int i = 0; i <= itop; i++) {
+                    push(ptr->retrieve()[i]);
+                }
+            }
+            else {
+                for (int i = 0; i <= ARRAY_CAPACITY; i++) {
+                    push(ptr->retrieve()[i]);
+                }
+            }
+        }
     }
     
-    for (int i = 0; i < stack_size; i++)
-        stack.push(tempArray[i]);
     
-    // First, copy over the Double_sentinel_list
-    /*
-    int remainingItems = stack_size;
-    for (Double_node<Type> *node = list.tail(); node != list.head(); node = node->previous()) {
-        Type *array_to_be_copied = new Type[ARRAY_CAPACITY];
-        array_to_be_copied = node->retrieve();
-        Type *copied_array = new Type[ARRAY_CAPACITY];
-        int remainingItemsOnStack = remainingItems % 8;
-        if (remainingItemsOnStack == 0)
-            remainingItemsOnStack = 8;
-        for (int j = 0; j < remainingItemsOnStack; j++)
-            copied_array[j] = array_to_be_copied[j];
-        remainingItems -= remainingItemsOnStack;
-        list.push_front(copied_array);
-    }
-    */
     
     //Feasibility?
 }
@@ -130,7 +108,7 @@ Linked_stack<Type>::~Linked_stack() {
     // Otherwise, traverse the list, deleting each node, including the head and tail sentinels, to deallocate the memory pointed to by the entries of the linked list
     Double_node<Type> *curr = list.head();
     Double_node<Type> *tmpPtr = list.head()->next();
-    while (curr != nullptr) {
+    while (curr != list.tail()) {
         delete curr;
         curr = tmpPtr;
         tmpPtr = tmpPtr->next();
@@ -153,7 +131,7 @@ int Linked_stack<Type>::size() const {
 
 template <typename Type>
 int Linked_stack<Type>::list_size() const {
-	return list.size();
+    return list.Double_sentinel_list<Type>::size();
     //
     
     // Returns the number of nodes in the linked list data structure. This must be implemented as provided. (O(1))
@@ -170,9 +148,8 @@ Type Linked_stack<Type>::top() const {
     
     // Returns the object at the top of the stack (last entry in the front array)
     Type *tempArray = list.front();
-    Type result = *(tempArray + itop);
     
-	return result;
+	return tempArray[itop];
 }
 
 template <typename Type>
@@ -187,10 +164,15 @@ Linked_stack<Type> &Linked_stack<Type>::operator=( Linked_stack<Type> rhs ) {
 	//The assignment operator makes a copy of the argument and then swaps the member variables of this node with those of the copy. (O(nlhs + nrhs))
     
     // To avoid losing the argument (referred to as rhs), the following must be done
-    list = rhs.list;
-    stack_size = rhs.stack_size;
-    itop = rhs.itop;
+    /*
+    Linked_stack<Type> copy( rhs );
+    this->swap(copy);
+    */
     
+    //list = rhs.list;
+    //stack_size = rhs.stack_size;
+    //itop = rhs.itop;
+    swap ( rhs );
 	return *this;
 }
 
@@ -204,11 +186,10 @@ void Linked_stack<Type>::push( Type const &obj ) {
         Type *topArray = new Type[ARRAY_CAPACITY];
         itop = 0;
         topArray[itop] = obj;
-        list.push_front(*topArray);
+        list.push_front(topArray);
         // Looks diff from the instructions - problem? Instructions: If the stack is empty, allocate memory for a new array with the required capacity, push the address of that array onto the linked list, set both indices to zero and place the new argument at that location. The size of the stack is now one.
     }
     // If the topmost array constituting the stack isn't full, push the argument into it
-    //////////////////////////
     else {
         itop++;
         Double_node<Type> *curr = list.head()->next();
@@ -227,12 +208,15 @@ Type Linked_stack<Type>::pop() {
     // If the stack is empty, throw an underflow exception
     if (stack_size == 0) throw underflow();
     
-    // Otherwise, decrement itop and pop the top of the stack
+    // Otherwise, pop the top of the stack and decrement itop
+    Type *tempArray = list.front();
+    Type result = tempArray[itop];
+    tempArray[itop] = NULL;
     itop--;
-    Double_node<Type> *curr = list.head()->next();
-    Type *tmpArray = curr->retrieve();
-    Type result = tmpArray[(itop+1)];
-    tmpArray[(itop+1)] = NULL;
+    //Double_node<Type> *curr = list.head()->next();
+    //Type *tmpArray = curr->retrieve();
+    //Type result = tmpArray[(itop+1)];
+    //tmpArray[(itop+1)] = NULL;
     
     // if itop is an invalid value, reset it accordingly and delete the now-extraneous array and node
     if (itop == -1) {
@@ -241,7 +225,7 @@ Type Linked_stack<Type>::pop() {
     }
     
     // Decrement the stack size
-    stack_size--;
+    //stack_size--;
     
     // If the stack is now empty, also pop the front of the linked list and deallocate the memory allocated to the array in that node
     if (stack_size == 0) {
