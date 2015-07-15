@@ -76,19 +76,21 @@ stack_size( stack.stack_size ) {
     // Make a complete copy of the input linked stack. Each entry is pushed onto the new linked stack
     // If the list is empty, do nothing
     if (stack.list.size() == 0) return;
-    
+
 
     // If the list consists of one or more nodes, copy the entries of those one or more nodes onto the stack
     else if (stack.list.size() >= 1) {
         for (Double_node<Type> *ptr = stack.list.head()->next(); ptr != stack.list.tail(); ptr = ptr->next()) {
             if (ptr == stack.list.head()->next()) {
-                for (int i = 0; i <= itop; i++) {
-                    push(ptr->retrieve()[i]);
+                int itop_temp = itop;
+                for (int i = 0; i <= itop_temp; i++) {
+                    Linked_stack<Type>::push(ptr->retrieve()[i]);
+                    std::cout << *this << std::endl;
                 }
             }
             else {
                 for (int i = 0; i <= ARRAY_CAPACITY; i++) {
-                    push(ptr->retrieve()[i]);
+                    Linked_stack<Type>::push(ptr->retrieve()[i]);
                 }
             }
         }
