@@ -232,7 +232,7 @@ Type* Double_sentinel_list<Type>::pop_front() {
             throw underflow();
         // Delete the front node and return its contents
         Double_node<Type> *tmpPtr;
-        if (list_head->next_node != list_tail)
+        if (list_size > 1)
             tmpPtr = list_head->next_node->next_node;
         else
             tmpPtr = list_tail;
