@@ -72,45 +72,52 @@ itop( stack.itop ),
 stack_size( stack.stack_size ) {
 	// enter your implementation here
     
-    int numarrays = stack.list.size();
     // Make a complete copy of the input linked stack. Each entry is pushed onto the new linked stack
     // If the list is empty, do nothing
-    if (numarrays == 0) return;
+    if (stack.list.size() == 0) return;
 
 
     // If the list consists of one or more nodes, copy the entries of those one or more nodes onto the stack
-    else if (numarrays >= 1) {
-        for (Double_node<Type> *ptr = stack.list.head()->next(); ptr != stack.list.tail(); ptr = ptr->next()) {
-            if (ptr == stack.list.head()->next()) {
-                int itop_temp = itop;
-                for (int i = 0; i <= itop_temp; i++) {
-                    Linked_stack<Type>::push(ptr->retrieve()[i]);
-                    std::cout << *this << std::endl;
+    else {
+        // Push the topmost array of the list-to-be-copied to the new list
+        Double_node<Type> *ptr = stack.list.head()->next();
+        Type* tempArray = new Type[itop+1];
+        for (int i = 0; i <= itop; i++) {
+            tempArray[i] = ptr->retrieve()[i];
+        }
+        list.push_front(tempArray);
+        
+        // If the list-to-be-copied has more than one node, copy the remaining arrays to the new list
+        if (stack.list.size() > 1) {
+            ptr = ptr->next();
+            Type* tempArray = new Type[ARRAY_CAPACITY];
+            for (int i = 2; i <= stack.list.size(); i++) {
+                for (int i = 0; i < ARRAY_CAPACITY; i++) {
+                    tempArray[i] = ptr->retrieve()[i];
                 }
             }
-            else {
-                for (int i = 0; i <= ARRAY_CAPACITY; i++) {
-                    Linked_stack<Type>::push(ptr->retrieve()[i]);
-                }
-            }
+            list.push_back(tempArray);
         }
     }
 }
+
 
 template <typename Type>
 Linked_stack<Type>::~Linked_stack() {
     // If the stack is empty, there is nothing to delete
     if (stack_size == 0)
         return;
-    
-    // Otherwise, traverse the list, deleting each node, including the head and tail sentinels, to deallocate the memory pointed to by the entries of the linked list
-    Double_node<Type> *curr = list.head();
-    Double_node<Type> *tmpPtr = list.head()->next();
-    while (curr != list.tail()) {
-        delete curr;
-        curr = tmpPtr;
-        tmpPtr = tmpPtr->next();
+    // Otherwise, delete the list
+    while (!list.empty()) {
+        list.pop_front();
     }
+    // Otherwise, traverse the list, deleting each node, including the head and tail sentinels, to deallocate the memory pointed to by the entries of the linked list
+/*    Double_node<Type> *curr = list.head();
+    Double_node<Type> *tmpPtr = list.head()->next();
+    while (tmpPtr != list.tail()) {
+        Double_node<Type> *curr = tmpPtr;
+        tmpPtr = tmpPtr->next();
+    } */
 }
 
 template <typename Type>
@@ -221,28 +228,9 @@ Type Linked_stack<Type>::pop() {
         itop = ARRAY_CAPACITY - 1;
         list.pop_front();
     }
-    
-    // Decrement the stack size
-    //stack_size--;
-    
-    // If the stack is now empty, also pop the front of the linked list and deallocate the memory allocated to the array in that node
-    if (stack_size == 0) {
-        /* necessary? If the stack is now empty, itop = -1 (previous conditional)
-         Double_node<Type> temp = list.head()->next();
-         Type *tempArray = temp->retrieve();
-         delete [] tempArray;
-         list.pop_front();
-         */
-    }    
-    
-    // Decrement the stack size
     stack_size--;
-    
 	return result;
 }
-
-// You will be required to modify this function in order to accomodate
-// your implementation of a singly linked list in Project 1.
 
 // values are in arrays, not values singly attached to nodes
 // first arrays occur on list.tail()->previous(); not on list.head()
