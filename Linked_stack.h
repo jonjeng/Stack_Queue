@@ -108,8 +108,11 @@ Linked_stack<Type>::~Linked_stack() {
     if (stack_size == 0)
         return;
     // Otherwise, delete the list
-    while (!list.empty()) {
-        list.pop_front();
+    int listSize = list_size();
+    while (listSize > 0) {
+        Type *tempArray = list.front();
+        delete [] tempArray;
+        listSize--;
     }
     // Otherwise, traverse the list, deleting each node, including the head and tail sentinels, to deallocate the memory pointed to by the entries of the linked list
 /*    Double_node<Type> *curr = list.head();
@@ -192,7 +195,6 @@ void Linked_stack<Type>::push( Type const &obj ) {
         itop = 0;
         topArray[itop] = obj;
         list.push_front(topArray);
-        // Looks diff from the instructions - problem? Instructions: If the stack is empty, allocate memory for a new array with the required capacity, push the address of that array onto the linked list, set both indices to zero and place the new argument at that location. The size of the stack is now one.
     }
     // If the topmost array constituting the stack isn't full, push the argument into it
     else {
