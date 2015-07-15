@@ -36,35 +36,35 @@
 
 template <typename Type>
 class Dynamic_queue {
-	private:
-		int initial_capacity;
-		int array_capacity;
-		Type *array;
-		int ihead;
-		int itail;
-		int entry_count;
-		// other integer member variables, as necessary
-
-	public:
-		Dynamic_queue( int = 10 );
-		Dynamic_queue( Dynamic_queue const & );
-		~Dynamic_queue();
-
-		Type head() const;
-		int size() const;
-		bool empty() const;
-		int capacity() const;
-
-		void swap( Dynamic_queue & );
-		Dynamic_queue &operator=( Dynamic_queue );
-		void enqueue( Type const & );
-		Type dequeue();
-		void clear();
-
-	// Friends
-
-	template <typename T>
-	friend std::ostream &operator<<( std::ostream &, Dynamic_queue<T> const & );
+private:
+    int initial_capacity;
+    int array_capacity;
+    Type *array;
+    int ihead;
+    int itail;
+    int entry_count;
+    // other integer member variables, as necessary
+    
+public:
+    Dynamic_queue( int = 10 );
+    Dynamic_queue( Dynamic_queue const & );
+    ~Dynamic_queue();
+    
+    Type head() const;
+    int size() const;
+    bool empty() const;
+    int capacity() const;
+    
+    void swap( Dynamic_queue & );
+    Dynamic_queue &operator=( Dynamic_queue );
+    void enqueue( Type const & );
+    Type dequeue();
+    void clear();
+    
+    // Friends
+    
+    template <typename T>
+    friend std::ostream &operator<<( std::ostream &, Dynamic_queue<T> const & );
 };
 
 template <typename Type>
@@ -75,9 +75,9 @@ array( new Type[initial_capacity] ),
 ihead( 0 ),
 itail( 0 ),
 entry_count( 0 ) {
-	// Enter your implementation here.
+    // Enter your implementation here.
     // Instructions: If the argument is either 0 or a negative integer, set the initial capacity of the array to 1. The default initial capacity of the array is 10. Other member variables are assigned as appropriate.
-            // Jon: Do we need to add anything here?
+    // Jon: Do we need to add anything here?
 }
 
 template <typename Type>
@@ -88,13 +88,13 @@ array( new Type[array_capacity] ),
 ihead( queue.ihead ),
 itail( queue.itail ),
 entry_count( queue.entry_count ) {
-	// The above initializations copy the values of the appropriate
-	// member variables and allocate memory for the data structure;
-	// however, you must still copy the stored objects.
+    // The above initializations copy the values of the appropriate
+    // member variables and allocate memory for the data structure;
+    // however, you must still copy the stored objects.
     
     // The copy constructor creates a new instance of the queue. (O(n))
-
-	// Enter your implementation here.
+    
+    // Enter your implementation here.
     
     // If the array is empty, there is nothing to copy
     if (empty()) return;
@@ -106,57 +106,57 @@ entry_count( queue.entry_count ) {
 
 template <typename Type>
 Dynamic_queue<Type>::~Dynamic_queue() {
-	// Enter your implementation here.
+    // Enter your implementation here.
     // The destructor deletes the dynamically allocated memory (for the array)
     delete [] array;
 }
 
 template <typename Type>
 int Dynamic_queue<Type>::size() const {
-	// Enter your implementation here.
-	return (itail - ihead);
+    // Enter your implementation here.
+    return (itail - ihead);
 }
 
 template <typename Type>
 int Dynamic_queue<Type>::capacity() const {
-	// Enter your implementation here.
-	return array_capacity;
+    // Enter your implementation here.
+    return array_capacity;
 }
 
 template <typename Type>
 bool Dynamic_queue<Type>::empty() const {
-	// Enter your implementation here.
-	return !(itail - ihead);
+    // Enter your implementation here.
+    return !(itail - ihead);
 }
 
 template <typename Type>
 Type Dynamic_queue<Type>::head() const {
-	// Enter your implementation here.
+    // Enter your implementation here.
     // Return the object at the head of the queue (the object that would be removed by Type dequeue()). It may throw a underflow exception).
     if (empty()) throw underflow();
-	return array[ihead];
+    return array[ihead];
 }
 
 template <typename Type>
 void Dynamic_queue<Type>::swap( Dynamic_queue<Type> &queue ) {
-	std::swap( initial_capacity, queue.initial_capacity );
-	std::swap( array_capacity, queue.array_capacity );
-	std::swap( array, queue.array );
-	std::swap( ihead, queue.ihead );
-	std::swap( itail, queue.itail );
-	std::swap( entry_count, queue.entry_count );
+    std::swap( initial_capacity, queue.initial_capacity );
+    std::swap( array_capacity, queue.array_capacity );
+    std::swap( array, queue.array );
+    std::swap( ihead, queue.ihead );
+    std::swap( itail, queue.itail );
+    std::swap( entry_count, queue.entry_count );
 }
 
 template <typename Type>
 Dynamic_queue<Type> &Dynamic_queue<Type>::operator=( Dynamic_queue<Type> rhs ) {
-	swap( rhs );
-
-	return *this;
+    swap( rhs );
+    
+    return *this;
 }
 
 template <typename Type>
 void Dynamic_queue<Type>::enqueue( Type const &obj ) {
-	// Enter your implementation here.
+    // Enter your implementation here.
     
     // Check if array is full. An array of size 0 will have its tail at position 0, and this must be accounted for
     if (itail != 0 && itail == array_capacity) {
@@ -167,6 +167,7 @@ void Dynamic_queue<Type>::enqueue( Type const &obj ) {
         Type *temp = new Type[array_capacity];
         for (int i = 0, iterator = ihead; iterator < itail; i++, iterator++)
             temp[i] = array[iterator];
+        delete [] array;
         array = std::move(temp);
     }
     
@@ -178,7 +179,7 @@ void Dynamic_queue<Type>::enqueue( Type const &obj ) {
 
 template <typename Type>
 Type Dynamic_queue<Type>::dequeue() {
-	// Enter your implementation here.
+    // Enter your implementation here.
     
     //If the queue is empty, the underflow exception is thrown
     if (empty()) throw underflow();
@@ -201,7 +202,7 @@ Type Dynamic_queue<Type>::dequeue() {
 
 template <typename Type>
 void Dynamic_queue<Type>::clear() {
-	// Enter your implementation here.
+    // Enter your implementation here.
     // Empties the queue by resetting the member variables. The array is resized to the initial capacity. (O(1))
     initial_capacity = 10;
     array_capacity = initial_capacity;
@@ -215,14 +216,14 @@ void Dynamic_queue<Type>::clear() {
 
 template <typename Type>
 std::ostream &operator<<( std::ostream &out, Dynamic_queue<Type> const &queue ) {
-	// I don't know how you are implementing your queue so I cannot print it.
-	// If you want, you can print whatever you want here and then call cout
-	// in the driver.
-
-	// Remember to redirect to out, e.g.,
-	//      out << "Hello!";
-
-	return out;
+    // I don't know how you are implementing your queue so I cannot print it.
+    // If you want, you can print whatever you want here and then call cout
+    // in the driver.
+    
+    // Remember to redirect to out, e.g.,
+    //      out << "Hello!";
+    
+    return out;
 }
 
 // Is an error showing up in ece250.h or elsewhere?
