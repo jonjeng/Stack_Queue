@@ -108,19 +108,26 @@ Linked_stack<Type>::~Linked_stack() {
     if (stack_size == 0)
         return;
     // Otherwise, delete the list
-    int listSize = list_size();
+    int listSize = list.Double_sentinel_list<Type>::size();
+    Double_node<Type> *holder = list.head();
+    Double_node<Type> *curr = list.head()->next();
     while (listSize > 0) {
-        Type *tempArray = list.front();
+        Type *tempArray = curr->retrieve();
         delete [] tempArray;
         listSize--;
+        holder = curr;
+        std::cout << "deleted curr\n";
+        //delete curr;
+        if (listSize > 0 && holder->next() != nullptr)
+            curr = holder->next();
     }
-    // Otherwise, traverse the list, deleting each node, including the head and tail sentinels, to deallocate the memory pointed to by the entries of the linked list
-/*    Double_node<Type> *curr = list.head();
-    Double_node<Type> *tmpPtr = list.head()->next();
-    while (tmpPtr != list.tail()) {
-        Double_node<Type> *curr = tmpPtr;
-        tmpPtr = tmpPtr->next();
-    } */
+//    Double_node<Type> *head = list.head();
+//    Double_node<Type> *tail = list.tail();
+//    delete head;
+//    delete tail;
+    /* The above result in runtime errors, yet don't result in memory leaks on any deletions that don't involve a copied array */
+    std::cout << "exiting destructor...\n";
+    return;
 }
 
 template <typename Type>
